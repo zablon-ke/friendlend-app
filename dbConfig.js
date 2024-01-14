@@ -3,7 +3,7 @@ import mysql2 from 'mysql2'
 
 const USER="root"
 const PASSWORD=""
-const DATABASE="Lend"
+const DATABASE="friendlend"
 const HOST="localhost"
 const dbConfig = {
     host: `${HOST}`,
@@ -15,6 +15,4 @@ const dbConfig = {
 
   const pool=mysql2.createPool(dbConfig)
 
-
   export default pool
-
