@@ -2,10 +2,8 @@ import express from "express";
 import jwt from "jsonwebtoken";
 const route=express.Router()
 
-
 const verifyToken=(req,res,next)=>{
     const secret=process.env.SECRET || crypto.randomBytes(32).toString("hex")
-   
    const token=req.headers.authorization.split(" ")[1]
   
    jwt.verify(token,secret,(err,decoded)=>{
@@ -34,12 +32,11 @@ route.post("/add",(req,res)=>{
                      if( err['sqlMessage'].includes("ID")){
                         
                         return res.status(403).json({message:"Provide your unique National ID",success:false})
-                   
+                 
                   }
                   if( err['sqlMessage'].includes("phone")){
                         
                     return res.status(403).json({message:"Phone number already used",success:false})
-               
               }
                 }
                 console.log(err)
