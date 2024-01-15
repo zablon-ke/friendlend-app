@@ -87,7 +87,7 @@ route.get("/",verifyToken,(req,res)=>{
                 console.log(err)
                 return res.json({message:"Failed to fetch details",success:false,data:req.user})
             }
-            var loan_info=results[0]
+            let loan_info=results[0]
             if(results.length < 0){
                return res.json({message:"Success ",data:{loan:loan_info,profile:profile,loan:{}}})
             }
@@ -100,7 +100,7 @@ route.get("/",verifyToken,(req,res)=>{
                     console.log(err['sqlMessage'])
                 }
                 let emergency=results
-               res.json({message:"data available",success:true,data:{profile:profile,loan:{},emergency:emergency}})
+               res.json({message:"data available",success:true,data:{profile:profile,loan:loan_info,emergency:emergency}})
        
              })
 

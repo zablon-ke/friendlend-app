@@ -48,42 +48,47 @@ route.post("/loan",(req,res)=>{
         res.send(error)
     }
 }) 
-route.post("/contact",verifyToken,(req,res)=>{
+route.post("/contract",verifyToken,(req,res)=>{
     try{
         let contract_ID="CT"+randomUUID().split("-")[randomUUID().split("-").length-1].toUpperCase() 
-        const {app_ID,borrower_ID,lender_ID,State}=req.body
+        const {app_ID,borrower_ID,lender_ID}=req.body
         
         req.mysql.query("select * from Lender where user_ID=?",[req.user.user_id],(err,results)=>{
             if(err){
-                return res.status(500).json({message:"Failed",success:false})
+                return res.status(500).json({error:"Failed",success:false})
             }
             if(results.length < 1){
                  return res.json({message:"Only Lenders can lend , create a lender account to Lend",success:false})
             }
-            req.mysql.query("select amount, period,interestRate from loan inner join loan_type on loan.type_ID = loan_type.ID where app_ID=?",[app_ID],(err,results)=>{
+            req.mysql.query("select loanAmount, period,interestRate from loan inner join loan_type on loan.type_ID = loan_type.ID where app_ID=?",[app_ID],(err,results)=>{
                 if(err){
-                    return res.status(500).json({error:"Internal Server error",success:false})
+                    return res.status(500).json({error:"Internal Server error ",success:false})
                 }
                 if(results.length > 0){
-                    let amount1=parseFloat(results[0].amount)
-                    let interest=parseFloat(results[0].interestRate)  * amount1
-                   console.log(period)
-                  req.mysql.query("insert into contract(contract_ID,app_ID,borrower_ID,lender_ID,type_ID,State,interestCharged,amount) values(?,?,?,?,?,?,?)",[contract_ID,app_ID,borrower_ID,lender_ID,type_ID,"Approved",interest,amount1],(err,results)=>{
+                    let loanAmount=results[0].loanAmount
+                    let amount1=parseFloat(results[0].loanAmount)
+                    let interest=parseFloat(results[0].interestRate) /100 * amount1
+                    
+                    console.log(interest)
+                    let period=results[0].period
+                  req.mysql.query("insert into contract(app_ID,borrower_ID,lender_ID,State,interestCharged,amount) values(?,?,?,?,?,?)",[app_ID,borrower_ID,lender_ID,"Not Completed",interest,amount1],(err,results)=>{
                     if(err){
+                        console.log(err)
                         return res.status(500).json({message:"Internal Server error",success:false})
                     }
+                    req.json({message:`Loan amount of ${loanAmount} Approved to ${borrower_ID} to be repaid after ${period}`,success:true})
                 })
                 }
+                else{
+                    res.json({message:"Failed",success:false})
+                }
             })
-             
     })
- 
     }
     catch(error){
         console.log(error)
     }
 })
-
 route.post("/type",verifyToken,(req,res)=>{
    try {
     const {period,interestRate}=req.body
@@ -91,13 +96,12 @@ route.post("/type",verifyToken,(req,res)=>{
     req.mysql.query("insert into loan_type(period,interestRate) values(?,?)",[period,interestRate],(err,results)=>{
         if(err){
             return res.status(500).json({error:"Internal Server error",success:false})
-               
-        }
+       }
         res.json({message:"Loan Type added successfully",success:true})
     })
    } catch (error) {
       return res.status(500).json({error:"Internal Server error",success:false})
-              
+
    }
 })
 export default route
