@@ -107,7 +107,6 @@ route.post("/type",verifyToken,(req,res)=>{
     })
    } catch (error) {
       return res.status(500).json({error:"Internal Server error",success:false})
-
    }
 })
 
