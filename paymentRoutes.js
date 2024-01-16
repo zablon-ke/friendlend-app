@@ -14,14 +14,14 @@ const verifyToken=(req,res,next)=>{
     next()
    })
 }
-const updateBalance=(req,transaction_type,user_ID,amount,borrower_ID=null)=>{
+const updateBalance=(req,transaction_type,user_ID,amount)=>{
 
     if(transaction_type =="Deposit"){
         req.mysql.query("update Lender set amount = amount + ? where user_ID=?",[amount,user_ID],(err,results)=>{
           if(err){
-            return res.status(500).json({message:"Failed ",success:false})
+            return false
           }
-          res.json({message:"success",success:true})
+          return true
         })
     }
     else if(transaction_type =="credited"){
@@ -36,12 +36,10 @@ const updateBalance=(req,transaction_type,user_ID,amount,borrower_ID=null)=>{
 }
 route.post("/transaction",(req,res)=>{
     try {
-
        const {trans_ID, user_ID,amount,transaction_type,Description }=req.body
 
        req.mysql.query("select * from useraccount inner join Lender on Lender.User_ID = useraccount.user_ID where Lender.user_ID=?",[user_ID],(err,results)=>{
         if(err){   
-            console.log(err)
             return res.status(500).json({"error":"Failed "})
         }
 
@@ -51,14 +49,13 @@ route.post("/transaction",(req,res)=>{
                     console.log(err)
                     return res.status(500).json({error:"failed ",success:false})
                  }
+                 updateBalance(req,transaction_type,user_ID,amount)
                  res.json({message:"Transaction recorded successfully",success:true})
             })
-            
         }
         else{
             res.status(400).json({message:"Provide valid inputs ",success:false})
         }
-        
        })
         
     } catch (error) {

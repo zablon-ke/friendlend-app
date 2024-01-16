@@ -1,5 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import nodemailer from 'nodemailer'
 const route=express.Router()
 
 const verifyToken=(req,res,next)=>{
@@ -20,7 +21,9 @@ route.post("/add",(req,res)=>{
         const {firstName,middleName,lastName,userName,password,Email,gender,ID,DOB,phone,rol}=req.body
         req.mysql.query("insert into useraccount(userName,passwrd,Email,firstName,middleName,lastName,gender,ID,DOB,phone,rol) values(?,?,?,?,?,?,?,?,?,?,?)",[userName,password,Email,firstName,middleName,lastName,gender,ID,DOB,phone,rol],(err,results)=>{
             if(err){
+                console.log(err)
                 if(err['sqlMessage'].includes("Duplicate entry")){
+
                     if( err['sqlMessage'].includes("userName"))
                     {
                        return res.status(403).json({message:"UserName already exists",success:false})
@@ -43,6 +46,8 @@ route.post("/add",(req,res)=>{
               return  res.status(500).json({message:"internal server error",success:false})
             }
             res.json({message:"Account created successfully",success:true})
+
+            sendMail(Email)
         })
     }
 
@@ -144,5 +149,51 @@ const updateToken=(req,token,user_id)=>{
 }
 
 
+const sendMail=(email)=>{
+    try {
+        const transporter= nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.PASSWORD
+            }
+        })
+
+
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: email,
+            subject: 'Account Verification ',
+            text: `Verify your account to enjoy amazing limits with friendlend http://localhost:3000/user/verify?email=${email}`
+          };
+
+          transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              console.error('Error sending email:', error);
+            } else {
+              console.log('Email sent:', info.response);}
+            })
+    } catch (error) {
+        console.log(error)
+
+    }
+}
+
+
+route.get("/verify",(req,res)=>{
+    try{
+      const email=req.query.email
+       
+        req.mysql.query('update useraccount set Status=? where Email=?',["verified",email],(err,result)=>{
+            if(err){
+               return res.send("Failed to verify email")
+            }
+            res.json({message:"Account Verified",success:true})
+        })
+    }  
+    catch(error){
+
+    }
+})
 
 export default route;
