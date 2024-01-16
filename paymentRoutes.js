@@ -14,12 +14,24 @@ const verifyToken=(req,res,next)=>{
     next()
    })
 }
-const updateBalance=(req,transaction_type,user_ID,amount)=>{
+const updateBalance=(req,transaction_type,user_ID,amount,borrower_ID=null)=>{
 
     if(transaction_type =="Deposit"){
         req.mysql.query("update Lender set amount = amount + ? where user_ID=?",[amount,user_ID],(err,results)=>{
-
+          if(err){
+            return res.status(500).json({message:"Failed ",success:false})
+          }
+          res.json({message:"success",success:true})
         })
+    }
+    else if(transaction_type =="credited"){
+        req.mysql.query("update Lender set amount = amount - ? where user_ID=?",[amount,user_ID],(err,results)=>{
+            if(err){
+              return res.status(500).json({message:"Failed ",success:false})
+            }
+            res.json({message:"success",success:true})
+
+          })
     }
 }
 route.post("/transaction",(req,res)=>{
