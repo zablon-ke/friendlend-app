@@ -1,6 +1,5 @@
 import mysql2 from 'mysql2'
 
-
 const USER="root"
 const PASSWORD=""
 const DATABASE="friendlend"
