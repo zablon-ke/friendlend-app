@@ -8,6 +8,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import userRoutes from "./userRoutes.js";
 import appRoutes from "./appRoutes.js";
+import adminRoutes from './adminRoutes.js'
 dotenv.config()
 
 const app=express();
@@ -39,6 +40,7 @@ app.use((req,res,next)=>{
 
 app.use("/user",userRoutes)
 app.use("/app",appRoutes)
+app.use("/admin",adminRoutes)
 app.get("/",(req,res)=>{
     req.mysql.query("SELECT * from UserAccount",(err,results)=>{
         if(err){

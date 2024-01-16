@@ -71,13 +71,19 @@ route.post("/contract",verifyToken,(req,res)=>{
                     
                     console.log(interest)
                     let period=results[0].period
-                  req.mysql.query("insert into contract(app_ID,borrower_ID,lender_ID,State,interestCharged,amount) values(?,?,?,?,?,?)",[app_ID,borrower_ID,lender_ID,"Not Completed",interest,amount1],(err,results)=>{
+                  req.mysql.query("insert into contract(contract_ID,app_ID,borrower_ID,lender_ID,State,interestCharged,amount) values(?,?,?,?,?,?,?)",[contract_ID,app_ID,borrower_ID,lender_ID,"Not Completed",interest,amount1],(err,results)=>{
                     if(err){
                         console.log(err)
                         return res.status(500).json({message:"Internal Server error",success:false})
                     }
-                    req.json({message:`Loan amount of ${loanAmount} Approved to ${borrower_ID} to be repaid after ${period}`,success:true})
+                    req.mysql.query("select firstName , lastName from useraccount where User_ID=?",[borrower_ID],(err,results)=>{
+                        if(err){
+                            return res.status(500).json({error:"Failed ",success:false})
+                        }
+                        let username=` ${results[0].firstName} ${results[0].lastName}`
+                         res.json({message:`Loan amount of ${loanAmount} Approved to ${username} to be repaid after ${period} days`,success:true})
                 })
+                    })
                 }
                 else{
                     res.json({message:"Failed",success:false})
@@ -104,4 +110,5 @@ route.post("/type",verifyToken,(req,res)=>{
 
    }
 })
+
 export default route
