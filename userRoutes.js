@@ -4,6 +4,8 @@ import nodemailer from 'nodemailer'
 import fs from 'fs'
 import ejs from 'ejs'
 import { content } from "./File.js";
+import multer from "multer";
+import path from "path";
 const route=express.Router()
 
 const verifyToken=(req,res,next)=>{
@@ -18,6 +20,23 @@ const verifyToken=(req,res,next)=>{
     next()
    })
 }
+
+if(!fs.existsSync("uploads")){
+
+    fs.mkdirSync("uploads")
+}
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/'); // Set the destination folder for uploaded files
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    }
+  });
+
+
+  const upload=multer({storage:storage})
+
 
 route.post("/add",(req,res)=>{
     try{
@@ -201,4 +220,48 @@ route.get("/verify",(req,res)=>{
     }
 })
 
+
+route.post("/add/document",upload.single("file"),(req,res)=>{
+    try {
+        const {user_ID,document_type} =req.body
+        if(user_ID ==null || user_ID ==""){
+            fs.unlinkSync(`uploads/${req.file.filename}`)
+            return res.json({error:"failed"})
+        }
+        if(!req.file){
+            return res.status(400).json({error:"No file uploaded",success:false});
+        }
+        req.mysql.query("select * from useraccount where user_ID =?",[user_ID],(err,results)=>{
+            if(err){
+                return res.status(500).json({error:"Failed ",success:false})
+            }
+
+            if(results.length > 0){
+
+                const uploaded=req.file
+                const filename=uploaded.filename
+                req.mysql.query("insert into documents(user_ID,document_type,fileName) values(?,?,?)",[user_ID,document_type,filename],(err,results)=>{
+                    if(err){
+                        
+                            fs.unlinkSync(`uploads/${req.file.filename}`)
+                            return res.status(500).json({error:"Internal server error",success:false})
+                        }
+
+                        return res.json({message:"Document uploaded",success:true})
+
+                })
+               
+            }
+          
+
+        })
+    } catch (error) {
+        console.log(error)
+        res.json({error:"Failed",success:false})
+    }
+})
+
+const uploadDocument=()=>{
+
+}
 export default route;
