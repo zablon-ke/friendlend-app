@@ -40,5 +40,4 @@ route.post("/chat",verifyToken,(req,res)=>{
         return res.status(500).json({error:"Internal Server error",success:false})
     }
 })
-
 export default route

@@ -7,7 +7,9 @@ import userRoutes from "./userRoutes.js";
 import appRoutes from "./appRoutes.js";
 import adminRoutes from './adminRoutes.js'
 import paymentRoutes from './paymentRoutes.js'
+import chatRoutes from './chatRoutes.js'
 import axios from "axios";
+import http from 'http'
 dotenv.config()
 
 const app=express();
@@ -17,7 +19,6 @@ app.use(cors())
 app.use(express.json())
 app.use(bodyParser.json())
 app.use(express.urlencoded({extended : true}))
-
 
 const getAccessToken=()=>{
     let consumerKey = 'ojKAdE26Ru63g13qKzWTtOpbXcFEdFh3'; 
@@ -35,7 +36,7 @@ const getAccessToken=()=>{
     })
 }
 // get database connection
-      
+
 app.use((req,res,next)=>{
     pool.getConnection((err,connection)=>{
         if(err){
@@ -51,10 +52,13 @@ app.use("/user",userRoutes)
 app.use("/app",appRoutes)
 app.use("/admin",adminRoutes)
 app.use("/vi",paymentRoutes)
+app.use("",chatRoutes)
+
+
+
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT,()=>{
     console.log(`app running at http://localhost:${PORT}`)
 })
-
-
-

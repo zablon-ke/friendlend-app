@@ -2,10 +2,10 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import nodemailer from 'nodemailer'
 import fs from 'fs'
-import ejs from 'ejs'
 import { content } from "./File.js";
 import multer from "multer";
 import path from "path";
+
 const route=express.Router()
 
 const verifyToken=(req,res,next)=>{
@@ -34,9 +34,7 @@ const storage = multer.diskStorage({
     }
   });
 
-
   const upload=multer({storage:storage})
-
 
 route.post("/add",(req,res)=>{
     try{
