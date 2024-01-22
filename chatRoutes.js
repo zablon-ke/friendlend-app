@@ -1,12 +1,10 @@
 import express from 'express'
 import { randomUUID } from 'crypto'
 import jwt from 'jsonwebtoken'
-
 const route=express.Router()
 const verifyToken=(req,res,next)=>{
-    const secret=process.env.SECRET || crypto.randomBytes(32).toString("hex")
-   const token=req.headers.authorization.split(" ")[1]
-  
+    const secret=process.env.SECRET
+    const token=req.headers.authorization.split(" ")[1]
    jwt.verify(token,secret,(err,decoded)=>{
     if(err){
       return  res.status(401).json({"success":false,"message":"session expired"})
@@ -14,7 +12,7 @@ const verifyToken=(req,res,next)=>{
     req.user=decoded
     next()
    })
-}
+}  
 route.post("/chat",verifyToken,(req,res)=>{
     try {
         let message_ID=randomUUID().split("-")[randomUUID().split("-").length-1].toUpperCase()
@@ -40,4 +38,17 @@ route.post("/chat",verifyToken,(req,res)=>{
         return res.status(500).json({error:"Internal Server error",success:false})
     }
 })
+route.get("/chat",(req,res)=>{
+    try {
+        req.mysql.query("select * from messages where receiver_ID=? or sender_ID=?",["2","2"],(err,messages)=>{
+            if(err){
+                return res.status(500).json({error:"Failed to fetch messages",success:false})
+            }
+            return res.json({messages:messages,success:true})
+        })
+    } catch (error) {
+        res.status(500).json({error:"Failed ",success:false}) 
+    }
+})
+
 export default route

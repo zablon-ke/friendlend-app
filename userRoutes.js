@@ -6,12 +6,11 @@ import { content } from "./File.js";
 import multer from "multer";
 import path from "path";
 
-const route=express.Router()
 
+const route=express.Router()
 const verifyToken=(req,res,next)=>{
     const secret=process.env.SECRET || crypto.randomBytes(32).toString("hex")
    const token=req.headers.authorization.split(" ")[1]
-  
    jwt.verify(token,secret,(err,decoded)=>{
     if(err){
       return  res.status(401).json({"success":false,"message":"session expired"})
@@ -20,6 +19,7 @@ const verifyToken=(req,res,next)=>{
     next()
    })
 }
+
 
 if(!fs.existsSync("uploads")){
 
@@ -70,7 +70,6 @@ route.post("/add",(req,res)=>{
             sendMail(Email)
         })
     }
-
     catch(error){
 
     }
@@ -163,15 +162,11 @@ const updateToken=(req,token,user_id)=>{
         })
     }
     catch(error){
-
         res.status(500).json({"message":"Internal server error",success:false})
     }
 }
-
-
 const sendMail=(email)=>{
     try {
-        
         const transporter= nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -196,9 +191,9 @@ const sendMail=(email)=>{
             })
     } catch (error) {
         console.log(error)
-
     }
 }
+
 route.get("/verify",(req,res)=>{
     try{
       const email=req.query.email
@@ -217,8 +212,6 @@ route.get("/verify",(req,res)=>{
 
     }
 })
-
-
 route.post("/add/document",upload.single("file"),(req,res)=>{
     try {
         const {user_ID,document_type} =req.body
@@ -240,22 +233,16 @@ route.post("/add/document",upload.single("file"),(req,res)=>{
                 const filename=uploaded.filename
                 req.mysql.query("insert into documents(user_ID,document_type,fileName) values(?,?,?)",[user_ID,document_type,filename],(err,results)=>{
                     if(err){
-                        
                             fs.unlinkSync(`uploads/${req.file.filename}`)
                             return res.status(500).json({error:"Internal server error",success:false})
                         }
-
                         return res.json({message:"Document uploaded",success:true})
-
                 })
-               
             }
-          
-
         })
     } catch (error) {
         console.log(error)
-        res.json({error:"Failed",success:false})
+        res.json({error:"Failed",success:false})   
     }
 })
 

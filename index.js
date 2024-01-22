@@ -8,8 +8,8 @@ import appRoutes from "./appRoutes.js";
 import adminRoutes from './adminRoutes.js'
 import paymentRoutes from './paymentRoutes.js'
 import chatRoutes from './chatRoutes.js'
-import axios from "axios";
-import http from 'http'
+import MpesaRoutes from './Mpesa.js'
+import axios from "axios";        
 dotenv.config()
 
 const app=express();
@@ -53,9 +53,7 @@ app.use("/app",appRoutes)
 app.use("/admin",adminRoutes)
 app.use("/vi",paymentRoutes)
 app.use("",chatRoutes)
-
-
-
+app.use("",MpesaRoutes)
 
 
 const PORT = process.env.PORT || 3000;
