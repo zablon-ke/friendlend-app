@@ -135,6 +135,4 @@ route.get("/contract",(req,res)=>{
         res.json(results)
     })
 })
-
-console.log(13057-101)
 export default route
