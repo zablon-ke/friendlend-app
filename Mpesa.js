@@ -2,7 +2,6 @@ import express from 'express'
 import axios from "axios";
 import jwt from 'jsonwebtoken';
 import fs from 'fs'
-import { time } from 'console';
 
 const route=express.Router()
 const accessToken = (req, res, next)=> {
@@ -33,7 +32,6 @@ const stkPush=(amount,phone,req,res)=>{
         "Authorization":`Bearer ${req.access_token}`,
         "Content-Type":"application/json"
     }
-    
     let bsc=process.env.BUSINESS_SHORT_CODE
     let timestamp=calculateTimestamp()
     
@@ -46,7 +44,7 @@ const stkPush=(amount,phone,req,res)=>{
         "PartyA": phone,
         "PartyB": process.env.PARTY_B,
         "PhoneNumber": phone,
-        "CallBackURL": process.env.BASE_URL +"/call",
+        "CallBackURL": `${process.env.BASE_URL}/callback`,
         "AccountReference": "GMD HOTEL",
         "TransactionDesc": "Taxayo"
     }
@@ -62,8 +60,9 @@ const stkPush=(amount,phone,req,res)=>{
         res.json({message:CustomerMessage,success:true})
     }).
     catch(error=>{
+        
+        console.log(error)
         res.json(error)
-       console.log(error)
     })
 }
 const checkTransaction=(req,res)=>{
@@ -92,10 +91,9 @@ const checkTransaction=(req,res)=>{
      })
 }
 const register=(req,res)=>{
-
     const url="https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl"
     const payload={    
-        "ShortCode": "601426",
+        "ShortCode": process.env.BUSINESS_SHORT_CODE,
         "ResponseType":"Completed",
         "ConfirmationURL":`${process.env.BASE_URL}/confirm`,
         "ValidationURL":`${process.env.BASE_URL}/validate`
@@ -111,8 +109,6 @@ const register=(req,res)=>{
      .catch(error=>{
         console.log(error)
      })
-
-
 }
 route.post("/confirm",(req,res)=>{
     console.log(req.body)
@@ -120,22 +116,19 @@ route.post("/confirm",(req,res)=>{
 route.post("/validate",(req,res)=>{
     console.log(req.body)
 })
+
 route.post("/stk",accessToken,(req,res)=>{
     
     let {phone}=req.body
-    register(req,res)
-    
-    // stkPush("1",phone,req,res)
+    //  register(req,res)
+    stkPush("1",phone,req,res)
     
     // checkTransaction(req,res)
 })
-route.post("/call",(req,res)=>{
-   console.log(req.body)
-   fs.writeFileSync("transactions.txt",req.body)
-   res.send(req.body)
+route.post("/callback",(req,res)=>{
+   console.log(req)
+//    fs.writeFileSync("transactions.txt",req.body)
 })
-route.get("/call",(req,res)=>{
-    console.log(req.body)
- })
+
 
 export default route
