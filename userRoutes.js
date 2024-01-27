@@ -196,7 +196,6 @@ const sendMail=(email)=>{
 route.get("/verify",(req,res)=>{
     try{
       const email=req.query.email
-       
         req.mysql.query('update useraccount set Status=? where Email=?',["verified",email],(err,result)=>{
             if(err){
                return res.send("Failed to verify email")

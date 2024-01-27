@@ -46,7 +46,7 @@ const stkPush=(amount,phone,req,res)=>{
         "PartyA": phone,
         "PartyB": process.env.PARTY_B,
         "PhoneNumber": phone,
-        "CallBackURL": `https://ace0-102-167-66-141.ngrok-free.app/callback`,
+        "CallBackURL": `${process.env.BASE_URL}/callback`,
         "AccountReference": "GMD HOTEL",
         "TransactionDesc": "Taxayo"
     }
@@ -83,8 +83,8 @@ const checkTransaction=(req,res)=>{
     }
     let checkouts=["ws_CO_23012024042412073769702562","ws_CO_27012024075632262769702562",["ws_CO_27012024084956675769702562"]]
     const payload={    
-        "BusinessShortCode":process.env.BUSINESS_SHORT_CODE,    
-        "Password": Buffer.from(`${process.env.BUSINESS_SHORT_CODE}${process.env.PASSKEY}${timestamp}`).toString("base64"),
+        "BusinessShortCode":"600977",    
+        "Password": Buffer.from(`${600977}${process.env.PASSKEY}${timestamp}`).toString("base64"),
         "Timestamp": timestamp,  
         "CheckoutRequestID": checkouts[0],    
      }    
@@ -115,7 +115,8 @@ const register=(req,res)=>{
         console.log(response['data']) 
      })
      .catch(error=>{
-        console.log("error")
+        console.log(error)
+        res.json(error)
      })
 }
 route.post("/confirm",(req,res)=>{
@@ -127,9 +128,9 @@ route.post("/validate",(req,res)=>{
 
 route.post("/stk",accessToken,(req,res)=>{
     
-    // let {phone}=req.body
-    // stkPush("1",phone,req,res)
-    register(req,res)
+     let {phone}=req.body
+     stkPush("1",phone,req,res)
+    // register(req,res)
     // checkTransaction(req,res)
 })
 route.post("/callback",(req,res)=>{
