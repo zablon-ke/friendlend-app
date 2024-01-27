@@ -9,32 +9,20 @@ import adminRoutes from './adminRoutes.js'
 import paymentRoutes from './paymentRoutes.js'
 import chatRoutes from './chatRoutes.js'
 import MpesaRoutes from './Mpesa.js'
-import axios from "axios";        
+import MpRoutes from './mp.js'  
 dotenv.config()
 
 const app=express();
+
+// allow cors origin
 app.use(cors())
 
 // parse json and form-data
-app.use(express.json())
+// app.use(express.json())
 app.use(bodyParser.json())
 app.use(express.urlencoded({extended : true}))
 
-const getAccessToken=()=>{
-    let consumerKey = 'ojKAdE26Ru63g13qKzWTtOpbXcFEdFh3'; 
-	let consumerSecret = '2O8k1AM3CcrkgvIq'; 
-    let url="https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
-    let auth=new Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
-   console.log(auth)
 
-    let headers={"Authorization": "Basic " + auth,
-    "Content-Type":"application/json; charset=utf8"}
-    axios.get(url,{headers:headers}).then(response=>{
-        console.log(response.json())
-    }).catch(error=>{
-        console.log(error)
-    })
-}
 // get database connection
 
 app.use((req,res,next)=>{
@@ -54,6 +42,7 @@ app.use("/admin",adminRoutes)
 app.use("/vi",paymentRoutes)
 app.use("",chatRoutes)
 app.use("",MpesaRoutes)
+app.use("/p",MpRoutes)
 
 
 const PORT = process.env.PORT || 3000;

@@ -2,8 +2,10 @@ import express from 'express'
 import axios from "axios";
 import jwt from 'jsonwebtoken';
 import fs from 'fs'
-
+import cors from 'cors'
 const route=express.Router()
+
+route.use(cors())
 const accessToken = (req, res, next)=> {
     const auth = {'Authorization': 'Basic ' +Buffer.from(process.env.CONSUMER_KEY+":"+process.env.CONSUMER_SECRET).toString('base64')};
     const url="https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
@@ -44,10 +46,11 @@ const stkPush=(amount,phone,req,res)=>{
         "PartyA": phone,
         "PartyB": process.env.PARTY_B,
         "PhoneNumber": phone,
-        "CallBackURL": `${process.env.BASE_URL}/callback`,
+        "CallBackURL": `https://ace0-102-167-66-141.ngrok-free.app/callback`,
         "AccountReference": "GMD HOTEL",
         "TransactionDesc": "Taxayo"
     }
+
     axios.post(url,payload,{headers}).
     then(response=>{
         const data=response['data']
@@ -57,6 +60,11 @@ const stkPush=(amount,phone,req,res)=>{
         let ResponseDescription= data['ResponseDescription']
         let CustomerMessage= data['CustomerMessage']
         console.log(CheckoutRequestID)
+        fs.appendFile("checkouts.txt",CheckoutRequestID+" "+new Date().getFullYear()+""+new Date().getMonth()+1+""+new Date().getDate()+""+new Date().getHours()+" \n",(e=>{
+            if(e){
+                console.log(e)
+            }
+        }))
         res.json({message:CustomerMessage,success:true})
     }).
     catch(error=>{
@@ -68,17 +76,17 @@ const stkPush=(amount,phone,req,res)=>{
 const checkTransaction=(req,res)=>{
     const url="https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query"
     let timestamp=calculateTimestamp()
-    console.log(timestamp)
-
+    
     const headers={
         "Authorization":`Bearer ${req.access_token}`,
         "Content-Type":"application/json"
     }
+    let checkouts=["ws_CO_23012024042412073769702562","ws_CO_27012024075632262769702562",["ws_CO_27012024084956675769702562"]]
     const payload={    
         "BusinessShortCode":process.env.BUSINESS_SHORT_CODE,    
         "Password": Buffer.from(`${process.env.BUSINESS_SHORT_CODE}${process.env.PASSKEY}${timestamp}`).toString("base64"),
         "Timestamp": timestamp,  
-        "CheckoutRequestID": "ws_CO_23012024042412073769702562",    
+        "CheckoutRequestID": checkouts[0],    
      }    
      axios.post(url,payload,{headers})
      .then(response=>{
@@ -107,7 +115,7 @@ const register=(req,res)=>{
         console.log(response['data']) 
      })
      .catch(error=>{
-        console.log(error)
+        console.log("error")
      })
 }
 route.post("/confirm",(req,res)=>{
@@ -119,14 +127,17 @@ route.post("/validate",(req,res)=>{
 
 route.post("/stk",accessToken,(req,res)=>{
     
-    let {phone}=req.body
-    //  register(req,res)
-    stkPush("1",phone,req,res)
-    
+    // let {phone}=req.body
+    // stkPush("1",phone,req,res)
+    register(req,res)
     // checkTransaction(req,res)
 })
 route.post("/callback",(req,res)=>{
-   console.log(req)
+    console.log(req.body)
+    fs.writeFile("transactions.json",JSON.stringify(req.body),(e=>{
+        console.log("Logs saved")
+    }))
+    res.send("Callback")
 //    fs.writeFileSync("transactions.txt",req.body)
 })
 

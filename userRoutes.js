@@ -20,7 +20,6 @@ const verifyToken=(req,res,next)=>{
    })
 }
 
-
 if(!fs.existsSync("uploads")){
 
     fs.mkdirSync("uploads")
@@ -205,7 +204,6 @@ route.get("/verify",(req,res)=>{
             if(result){
                 res.json({message:"Account Verified",success:true})
             }
-           
         })
     }  
     catch(error){
@@ -247,6 +245,6 @@ route.post("/add/document",upload.single("file"),(req,res)=>{
 })
 
 const uploadDocument=()=>{
-
+   
 }
 export default route;
