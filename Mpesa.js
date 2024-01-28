@@ -59,7 +59,7 @@ const stkPush=(amount,phone,req,res)=>{
         "PartyA": phone,
         "PartyB": process.env.PARTY_B,
         "PhoneNumber": phone,
-        "CallBackURL": `https://bc55-154-122-7-250.ngrok-free.app/payment/success`,
+        "CallBackURL": `https://5cb7-102-167-148-245.ngrok-free.app/payment/success`,
         "AccountReference": "GMD HOTEL",
         "TransactionDesc": "Taxayo"
     }
@@ -108,7 +108,7 @@ const checkTransaction=(req,res)=>{
         "BusinessShortCode":"600977",    
         "Password": Buffer.from(`${600977}${process.env.PASSKEY}${timestamp}`).toString("base64"),
         "Timestamp": timestamp,  
-        "CheckoutRequestID": checkouts[0],    
+        "CheckoutRequestID": checkouts[1],    
      }  
     
      axios.post(url,payload,{headers})
@@ -152,11 +152,11 @@ route.post("/validate",(req,res)=>{
 route.post("/stk",verifyToken,accessToken,(req,res)=>{
     
      let {phone}=req.body
-     stkPush("1",phone,req,res)
+    //  stkPush("1",phone,req,res)
     // register(req,res)
-    // checkTransaction(req,res)
+    checkTransaction(req,res)
 })
-route.post("/callback",(req,res)=>{
+route.post("/payment/success",(req,res)=>{
     console.log(req.body)
     fs.writeFile("transactions.json",JSON.stringify(req.body),(e=>{
         console.log("Logs saved")
