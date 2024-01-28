@@ -59,7 +59,7 @@ const stkPush=(amount,phone,req,res)=>{
         "PartyA": phone,
         "PartyB": process.env.PARTY_B,
         "PhoneNumber": phone,
-        "CallBackURL": `${process.env.BASE_URL}/callback`,
+        "CallBackURL": `https://bc55-154-122-7-250.ngrok-free.app/payment/success`,
         "AccountReference": "GMD HOTEL",
         "TransactionDesc": "Taxayo"
     }
