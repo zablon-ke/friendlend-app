@@ -16,32 +16,34 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `payment`
+-- Table structure for table `emergency`
 --
 
-DROP TABLE IF EXISTS `payment`;
+DROP TABLE IF EXISTS `emergency`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `payment` (
-  `payment_id` varchar(30) NOT NULL,
-  `contract_ID` varchar(15) DEFAULT NULL,
-  `paymentAmount` decimal(8,2) DEFAULT NULL,
-  `paymentDate` date DEFAULT NULL,
-  `State` varchar(10) DEFAULT NULL,
-  `lateFee` decimal(6,2) DEFAULT NULL,
-  PRIMARY KEY (`payment_id`),
-  KEY `fk_py_ct` (`contract_ID`),
-  CONSTRAINT `fk_py_ct` FOREIGN KEY (`contract_ID`) REFERENCES `contract` (`contract_ID`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `emergency` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `firstName` varchar(20) DEFAULT NULL,
+  `lastName` varchar(20) DEFAULT NULL,
+  `phone` varchar(15) DEFAULT NULL,
+  `relationship` varchar(20) DEFAULT NULL,
+  `user_ID` int(11) DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `phone` (`phone`),
+  KEY `fk_em_us` (`user_ID`),
+  CONSTRAINT `fk_em_us` FOREIGN KEY (`user_ID`) REFERENCES `useraccount` (`User_ID`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `payment`
+-- Dumping data for table `emergency`
 --
 
-LOCK TABLES `payment` WRITE;
-/*!40000 ALTER TABLE `payment` DISABLE KEYS */;
-/*!40000 ALTER TABLE `payment` ENABLE KEYS */;
+LOCK TABLES `emergency` WRITE;
+/*!40000 ALTER TABLE `emergency` DISABLE KEYS */;
+INSERT INTO `emergency` VALUES (1,'Eliud','Mukhwana','0706475329','Father',2),(4,'Alex','Mukhwana','0769702562','Brother',2);
+/*!40000 ALTER TABLE `emergency` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-02-05  8:17:43
+-- Dump completed on 2024-02-05  8:17:45

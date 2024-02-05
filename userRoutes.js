@@ -130,7 +130,16 @@ route.get("/",verifyToken,(req,res)=>{
         })
     })
 })
+route.get("/users",(req,res)=>{
+     
+    req.mysql.query("select user_ID,userName,firstName,middleName,lastName,phone,Email,gender,DOB,rol from UserAccount",(err,results)=>{
+        if(err){
+           return res.json({message:"Failed to fetch details",success:false})
+        }
 
+        res.json(results)
+    })
+})
 route.post("/emergency/add",verifyToken,(req,res)=>{
     try{
         const{firstName,lastName,phone,relationship,user_ID}=req.body;

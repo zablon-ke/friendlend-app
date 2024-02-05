@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `documents`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `documents` (
-  `document_ID` int(11) NOT NULL,
+  `document_ID` int(11) NOT NULL AUTO_INCREMENT,
   `user_ID` int(11) DEFAULT NULL,
   `document_type` varchar(15) DEFAULT NULL,
   `fileName` varchar(50) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE `documents` (
   KEY `fk_dc_us` (`user_ID`),
   CONSTRAINT `fk_dc_us` FOREIGN KEY (`user_ID`) REFERENCES `useraccount` (`User_ID`) ON UPDATE CASCADE,
   CONSTRAINT `CONSTRAINT_1` CHECK (`document_type` in ('ID_back','ID_front','bank','mpesa'))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,6 +41,7 @@ CREATE TABLE `documents` (
 
 LOCK TABLES `documents` WRITE;
 /*!40000 ALTER TABLE `documents` DISABLE KEYS */;
+INSERT INTO `documents` VALUES (1,2,NULL,'file-1705480985234.java','2024-01-17 11:43:05'),(2,2,'ID_back','file-1705481096251.java','2024-01-17 11:44:56'),(3,2,NULL,'file-1705481149783.java','2024-01-17 11:45:49'),(4,2,NULL,'file-1705481181339.java','2024-01-17 11:46:21'),(5,2,'ID_front','file-1705481233789.java','2024-01-17 11:47:13');
 /*!40000 ALTER TABLE `documents` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-14 16:02:39
+-- Dump completed on 2024-02-05  8:17:43

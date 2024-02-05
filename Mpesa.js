@@ -59,7 +59,7 @@ const stkPush=(amount,phone,req,res)=>{
         "PartyA": phone,
         "PartyB": process.env.PARTY_B,
         "PhoneNumber": phone,
-        "CallBackURL": `https://5cb7-102-167-148-245.ngrok-free.app/payment/success`,
+        "CallBackURL": `https://7fd3-102-166-138-252.ngrok-free.app/payment/success`,
         "AccountReference": "GMD HOTEL",
         "TransactionDesc": "Taxayo"
     }
@@ -152,9 +152,9 @@ route.post("/validate",(req,res)=>{
 route.post("/stk",verifyToken,accessToken,(req,res)=>{
     
      let {phone}=req.body
-    //  stkPush("1",phone,req,res)
+     stkPush("1",phone,req,res)
     // register(req,res)
-    checkTransaction(req,res)
+    // checkTransaction(req,res)
 })
 route.post("/payment/success",(req,res)=>{
     console.log(req.body)

@@ -28,6 +28,8 @@ CREATE TABLE `transactions` (
   `amount` decimal(10,2) DEFAULT NULL,
   `transaction_type` varchar(15) DEFAULT NULL,
   `Description` varchar(100) DEFAULT NULL,
+  `checkout_ID` varchar(30) NOT NULL,
+  `status` varchar(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`trans_ID`),
   KEY `fk_tr_us` (`user_ID`),
   CONSTRAINT `fk_tr_us` FOREIGN KEY (`user_ID`) REFERENCES `useraccount` (`User_ID`) ON UPDATE CASCADE,
@@ -41,6 +43,7 @@ CREATE TABLE `transactions` (
 
 LOCK TABLES `transactions` WRITE;
 /*!40000 ALTER TABLE `transactions` DISABLE KEYS */;
+INSERT INTO `transactions` VALUES ('2d3f0b1dab',2,NULL,NULL,NULL,'ws_CO_280120240039102857697025','0'),('2DFE5417F4',2,NULL,NULL,NULL,'ws_CO_300120240959574187697025','0'),('690DC38AE4',2,NULL,NULL,NULL,'ws_CO_280120240048512197697025','0'),('8FFD58938B',2,NULL,NULL,NULL,'ws_CO_280120241816268297697025','0'),('BE75F6A8FB',2,NULL,NULL,NULL,'ws_CO_280120240037470377697025','0'),('D1BDDEAB8A',2,NULL,NULL,NULL,'ws_CO_300120240958315417697025','0'),('EA89DFS8YT',11,20000.00,'Deposit','Deposited 200000 to lender account','','0'),('EADSDFS8YT',11,20000.00,'Deposit','Deposited 200000 to lender account','','0'),('EADSDFSE6S',11,20000.00,'Deposit','Deposited 200000 to lender account','','0'),('EAG9DFS8YT',11,20000.00,'Deposit','Deposited 200000 to lender account','','0');
 /*!40000 ALTER TABLE `transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-14 16:02:37
+-- Dump completed on 2024-02-05  8:17:43

@@ -27,14 +27,15 @@ CREATE TABLE `loan` (
   `user_ID` int(11) DEFAULT NULL,
   `loanAmount` decimal(8,2) DEFAULT NULL,
   `purpose` varchar(30) NOT NULL,
-  `term` varchar(10) DEFAULT NULL,
-  `interestRate` decimal(4,2) DEFAULT NULL,
-  `Date_applied` datetime DEFAULT NULL,
+  `Date_applied` datetime DEFAULT current_timestamp(),
   `date_approved_rejected` datetime DEFAULT NULL,
   `approvalNotes` text DEFAULT NULL,
-  `State` varchar(1) DEFAULT NULL,
+  `State` varchar(10) NOT NULL DEFAULT 'Pending',
+  `type_ID` int(11) DEFAULT NULL,
   PRIMARY KEY (`app_ID`),
   KEY `fk_ln_us` (`user_ID`),
+  KEY `fk_ln_tp` (`type_ID`),
+  CONSTRAINT `fk_ln_tp` FOREIGN KEY (`type_ID`) REFERENCES `loan_type` (`ID`) ON UPDATE CASCADE,
   CONSTRAINT `fk_ln_us` FOREIGN KEY (`user_ID`) REFERENCES `useraccount` (`User_ID`) ON UPDATE CASCADE,
   CONSTRAINT `CONSTRAINT_1` CHECK (`State` in ('Approved','Pending','Rejected'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -46,6 +47,7 @@ CREATE TABLE `loan` (
 
 LOCK TABLES `loan` WRITE;
 /*!40000 ALTER TABLE `loan` DISABLE KEYS */;
+INSERT INTO `loan` VALUES ('4128AEAD3156',2,100000.00,'Business',NULL,NULL,NULL,'pending',2),('710285870291',2,100000.00,'Business','2024-01-14 20:15:21',NULL,NULL,'pending',NULL);
 /*!40000 ALTER TABLE `loan` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -58,4 +60,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-14 16:02:40
+-- Dump completed on 2024-02-05  8:17:46

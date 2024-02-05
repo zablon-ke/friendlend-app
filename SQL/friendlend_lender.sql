@@ -16,32 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `payment`
+-- Table structure for table `lender`
 --
 
-DROP TABLE IF EXISTS `payment`;
+DROP TABLE IF EXISTS `lender`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `payment` (
-  `payment_id` varchar(30) NOT NULL,
-  `contract_ID` varchar(15) DEFAULT NULL,
-  `paymentAmount` decimal(8,2) DEFAULT NULL,
-  `paymentDate` date DEFAULT NULL,
-  `State` varchar(10) DEFAULT NULL,
-  `lateFee` decimal(6,2) DEFAULT NULL,
-  PRIMARY KEY (`payment_id`),
-  KEY `fk_py_ct` (`contract_ID`),
-  CONSTRAINT `fk_py_ct` FOREIGN KEY (`contract_ID`) REFERENCES `contract` (`contract_ID`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `lender` (
+  `lender_ID` int(11) NOT NULL AUTO_INCREMENT,
+  `user_ID` int(11) DEFAULT NULL,
+  `amount` decimal(12,2) DEFAULT NULL,
+  `date_created` datetime DEFAULT current_timestamp(),
+  `date_updated` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`lender_ID`),
+  CONSTRAINT `fk_ld_us` FOREIGN KEY (`lender_ID`) REFERENCES `useraccount` (`User_ID`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `payment`
+-- Dumping data for table `lender`
 --
 
-LOCK TABLES `payment` WRITE;
-/*!40000 ALTER TABLE `payment` DISABLE KEYS */;
-/*!40000 ALTER TABLE `payment` ENABLE KEYS */;
+LOCK TABLES `lender` WRITE;
+/*!40000 ALTER TABLE `lender` DISABLE KEYS */;
+INSERT INTO `lender` VALUES (2,11,1019999.99,'2024-01-15 14:02:27','2024-01-15 14:02:27');
+/*!40000 ALTER TABLE `lender` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-02-05  8:17:43
+-- Dump completed on 2024-02-05  8:17:44

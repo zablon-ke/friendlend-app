@@ -45,6 +45,7 @@ CREATE TABLE `messages` (
 
 LOCK TABLES `messages` WRITE;
 /*!40000 ALTER TABLE `messages` DISABLE KEYS */;
+INSERT INTO `messages` VALUES ('003EE741AA53',11,'Loan','Howa you james','2024-01-17 12:55:44','Unread',2),('2AD62EC0B6F6',11,'Loan','Hello server','2024-01-17 12:53:59','Unread',2),('8C2ACC5D9B72',11,'Loan','','2024-01-17 12:54:10','Unread',2),('b9335492e6da',11,'Loan','Hello server','2024-01-17 12:48:43','Unread',2);
 /*!40000 ALTER TABLE `messages` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -57,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-14 16:02:36
+-- Dump completed on 2024-02-05  8:17:45

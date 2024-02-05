@@ -23,14 +23,14 @@ DROP TABLE IF EXISTS `credit`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `credit` (
-  `credit_id` int(11) NOT NULL,
+  `credit_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_ID` int(11) DEFAULT NULL,
   `score` decimal(8,2) DEFAULT NULL,
   `date_calculated` datetime DEFAULT current_timestamp(),
   PRIMARY KEY (`credit_id`),
   KEY `fk_cr_us` (`user_ID`),
   CONSTRAINT `fk_cr_us` FOREIGN KEY (`user_ID`) REFERENCES `useraccount` (`User_ID`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -39,6 +39,7 @@ CREATE TABLE `credit` (
 
 LOCK TABLES `credit` WRITE;
 /*!40000 ALTER TABLE `credit` DISABLE KEYS */;
+INSERT INTO `credit` VALUES (1,2,300000.00,'2024-01-16 14:27:51'),(2,2,300000.00,'2024-01-16 14:31:27');
 /*!40000 ALTER TABLE `credit` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-14 16:02:37
+-- Dump completed on 2024-02-05  8:17:44

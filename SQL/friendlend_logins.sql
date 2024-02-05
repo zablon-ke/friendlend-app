@@ -16,32 +16,28 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `payment`
+-- Table structure for table `logins`
 --
 
-DROP TABLE IF EXISTS `payment`;
+DROP TABLE IF EXISTS `logins`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `payment` (
-  `payment_id` varchar(30) NOT NULL,
-  `contract_ID` varchar(15) DEFAULT NULL,
-  `paymentAmount` decimal(8,2) DEFAULT NULL,
-  `paymentDate` date DEFAULT NULL,
-  `State` varchar(10) DEFAULT NULL,
-  `lateFee` decimal(6,2) DEFAULT NULL,
-  PRIMARY KEY (`payment_id`),
-  KEY `fk_py_ct` (`contract_ID`),
-  CONSTRAINT `fk_py_ct` FOREIGN KEY (`contract_ID`) REFERENCES `contract` (`contract_ID`) ON UPDATE CASCADE
+CREATE TABLE `logins` (
+  `mobile` varchar(15) NOT NULL,
+  `password` varchar(20) NOT NULL,
+  `token` text DEFAULT '',
+  `date_created` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`mobile`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `payment`
+-- Dumping data for table `logins`
 --
 
-LOCK TABLES `payment` WRITE;
-/*!40000 ALTER TABLE `payment` DISABLE KEYS */;
-/*!40000 ALTER TABLE `payment` ENABLE KEYS */;
+LOCK TABLES `logins` WRITE;
+/*!40000 ALTER TABLE `logins` DISABLE KEYS */;
+/*!40000 ALTER TABLE `logins` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
