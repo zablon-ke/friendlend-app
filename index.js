@@ -10,6 +10,7 @@ import paymentRoutes from './paymentRoutes.js'
 import chatRoutes from './chatRoutes.js'
 import MpesaRoutes from './Mpesa.js'
 import MpRoutes from './mp.js'  
+import transRoutes from './transRoutes.js'  
 dotenv.config()
 
 const app=express();
@@ -43,6 +44,7 @@ app.use("/vi",paymentRoutes)
 app.use("",chatRoutes)
 app.use("",MpesaRoutes)
 app.use("/p",MpRoutes)
+app.use("/tr",transRoutes)
 
 app.get("/used",(req,res)=>{
     res.json({"Message":"Out"})

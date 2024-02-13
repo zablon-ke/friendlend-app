@@ -184,4 +184,26 @@ route.get("/contract",(req,res)=>{
         res.json(results)
     })
 })
+route.patch("/vi/loan/update",verifyToken,(req,res)=>{
+    const {status,app_ID}=req.body
+    req.mysql.query("update loan set State=? where app_ID=?",[status,app_ID],(err,results)=>{
+        if(err){
+            return res.status(500).json({error:"Internal server error",success:false})
+        }
+        res.json({"message":"Loan status updated",success:true})
+    })
+})
+route.get("/vi/requests",verifyToken,(req,res)=>{
+    try {
+         req.mysql.query("select loan.app_ID, useraccount.firstName,useraccount.middleName ,useraccount.lastName,period,State as Status,interestRate,loanAmount,requests.app_ID from requests inner join useraccount on useraccount.User_ID=requests.borrower_ID inner join loan on loan.app_ID = requests.app_ID inner join loan_type on loan_type.ID = loan.type_ID where requests.lender_ID=?",[req.user.user_id],(err,results)=>{
+            if(err){
+                console.log(err)
+                return res.status(500).json({error:"Internal server error",success:false})
+            }
+            res.json({message:"Record fetched",success:true,data:results})
+         })
+    } catch (error) {
+        return res.status(500).json({error:"Internal server error",success:false})
+    }
+})
 export default route
