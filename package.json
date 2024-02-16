@@ -20,8 +20,10 @@
     "request": "^2.88.2",
     "safaricom": "^0.0.0",
     "socket.io": "^4.7.4",
+    "twilio": "^4.22.0",
     "unirest": "^0.6.0",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "ws": "^8.16.0"
   },
   "name": "lender",
   "version": "1.0.0",
@@ -33,5 +35,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "optionalDependencies": {
+    "bufferutil": "^4.0.8"
+  }
 }

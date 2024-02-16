@@ -9,6 +9,7 @@ const dbConfig = {
     user: `${USER}`,
     password: `${PASSWORD}`,
     database: `${DATABASE}`,
+    timezone: "UTC"
   };
 
 

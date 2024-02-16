@@ -1,6 +1,12 @@
 import express from 'express'
 import { randomUUID } from 'crypto'
 import jwt from 'jsonwebtoken'
+
+import http from 'http'
+import WebSocket from 'ws'
+
+
+
 const route=express.Router()
 const verifyToken=(req,res,next)=>{
     const secret=process.env.SECRET
@@ -16,7 +22,7 @@ const verifyToken=(req,res,next)=>{
 route.post("/chat",verifyToken,(req,res)=>{
     try {
         let message_ID=randomUUID().split("-")[randomUUID().split("-").length-1].toUpperCase()
-        const {receiver_ID,subject,content,state,sender_ID}=req.body
+        const {receiver_ID,subject,content,sender_ID,chat_ID}=req.body
 
         let isnull=false
         Object.values(req.body).forEach(value=>{
@@ -28,27 +34,80 @@ route.post("/chat",verifyToken,(req,res)=>{
         if(isnull){
             return
         }
-        req.mysql.query("insert into messages(message_ID,receiver_ID,subject,content,state,sender_ID) values(?,?,?,?,?,?)",[message_ID,receiver_ID,subject,content,state,sender_ID],(err,results)=>{
+        req.mysql.query("insert into messages(message_ID,receiver_ID,chat_ID,subject,content,state,sender_ID) values(?,?,?,?,?,?,?)",[message_ID,receiver_ID,chat_ID,subject,content,"Unread",sender_ID],(err,results)=>{
             if(err){
                return res.status(500).json({error:"Internal Server error",success:false})
             }
-            res.json({message:"Message Send",success:true})
+            console.log(req.body)
+            res.json({message:"Message Send",success:true,data:""})
         })
     } catch (error) {
         return res.status(500).json({error:"Internal Server error",success:false})
+    }  finally{
+        req.mysql.release();
     }
 })
-route.get("/chat",(req,res)=>{
+route.get("/chats",verifyToken,(req,res)=>{
     try {
-        req.mysql.query("select * from messages where receiver_ID=? or sender_ID=?",["2","2"],(err,messages)=>{
+
+        const {other}=req.query;
+        req.mysql.query("select * from messages where (receiver_ID=? and sender_ID=?) or (receiver_ID=? and sender_ID=?)  order by date_send ASC",[other,req.user.user_id,req.user.user_id,other],(err,messages)=>{
             if(err){
+                console.log(err)
                 return res.status(500).json({error:"Failed to fetch messages",success:false})
             }
-            return res.json({messages:messages,success:true})
+            return res.json({message:"Data available",success:true,data:messages,self:req.user.user_id})
         })
     } catch (error) {
         res.status(500).json({error:"Failed ",success:false}) 
+    }  finally{
+        req.mysql.release();
     }
 })
+
+    
+route.get("/chats/all",verifyToken,(req,res)=>{
+    try {
+ 
+const query = `
+WITH RankedMessages AS (
+  SELECT
+    m.*,
+    ROW_NUMBER() OVER (PARTITION BY m.chat_ID ORDER BY m.date_send DESC) AS row_num
+  FROM messages m
+)
+SELECT
+  rm.*,
+  sender_info.firstName AS sender_firstName,
+  sender_info.lastName AS sender_lastName,
+  receiver_info.firstName AS receiver_firstName,
+  receiver_info.lastName AS receiver_lastName
+FROM
+  RankedMessages rm
+INNER JOIN
+  useraccount sender_info ON rm.sender_ID = sender_info.User_ID
+INNER JOIN
+  useraccount receiver_info ON rm.receiver_ID = receiver_info.User_ID
+WHERE
+  rm.row_num = 1
+  AND (rm.receiver_ID = ? or rm.sender_ID=?) ;
+`;
+        req.mysql.query(query,[req.user.user_id,req.user.user_id],(err,messages)=>{
+            if(err){
+               
+                return res.status(500).json({error:"Failed to fetch messages",success:false})
+            }
+            return res.json({message:"Data available",success:true,data:messages,self:req.user.user_id})
+        })
+    }
+    
+    catch (error) {
+        res.status(500).json({error:"Failed ",success:false}) 
+    }
+    finally{
+        req.mysql.release();
+    }
+})
+
 
 export default route

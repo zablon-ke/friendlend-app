@@ -10,7 +10,10 @@ import paymentRoutes from './paymentRoutes.js'
 import chatRoutes from './chatRoutes.js'
 import MpesaRoutes from './Mpesa.js'
 import MpRoutes from './mp.js'  
-import transRoutes from './transRoutes.js'  
+import transRoutes from './transRoutes.js' 
+import http from 'http'
+import WebSocket from "ws"; 
+import { WebSocketServer } from "ws";
 dotenv.config()
 
 const app=express();
@@ -25,12 +28,17 @@ app.use(express.urlencoded({extended : true}))
 
 
 // get database connection
+const getConnectionFromPool = () => {
+    return
+};
 
 app.use((req,res,next)=>{
+   
     pool.getConnection((err,connection)=>{
         if(err){
             return res.status(500).send("Internal server error")
         }
+       
         req.mysql=connection
 
         next()
@@ -49,6 +57,25 @@ app.use("/tr",transRoutes)
 app.get("/used",(req,res)=>{
     res.json({"Message":"Out"})
 })
+
+
+
+const base_url=process.env.BASE_URL.split("//")[1]
+const ws = new WebSocketServer({port :8000,host:"1.1.1.58"});
+
+
+ws.on('error', (error)=>[
+    console.log(error)
+]);
+
+ws.on('connection', (ws)=>{
+    console.log(ws)
+})
+
+ws.on('message', (data)=> {
+  console.log('received: %s', data);
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT,()=>{

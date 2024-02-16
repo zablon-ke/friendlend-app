@@ -5,6 +5,7 @@ import fs from 'fs'
 import { content } from "./File.js";
 import multer from "multer";
 import path from "path";
+import  twilio from "twilio";
 
 
 const route=express.Router()
@@ -41,7 +42,7 @@ route.post("/sign_up",(req,res)=>{
 
         req.mysql.query("insert into logins(mobile,password) values(?,?)",[mobile,password],(err,results)=>{
             if(err){
-                 
+                 console.log(err)
                 if(err['sqlMessage'].includes("Duplicate entry")){
 
                     if( err['sqlMessage'].includes("mobile"))
@@ -60,7 +61,10 @@ route.post("/sign_up",(req,res)=>{
        
     } catch (error) {
         res.json({error:"Internal server error "+error,success:false})
+    }finally{
+        req.mysql.release()
     }
+
 })
 
 
@@ -89,6 +93,7 @@ route.post("/add",(req,res)=>{
                     return res.status(403).json({error:"Phone number already used",success:false})
               }
                 }
+                console.log(err)
                
               return  res.status(500).json({error:"internal server error",success:false})
             }
@@ -129,6 +134,48 @@ route.get("/lender",verifyToken,(req,res)=>{
         return  res.status(500).json({error:"internal server error",success:false})
     }
 })
+
+route.get("/lenders",verifyToken,(req,res)=>{
+    try{
+    const{search} =req.query
+    req.mysql.query("select useraccount.User_ID,firstName,lastName,phone,rol, count(*) as clients from useraccount left join requests on useraccount.user_ID = requests.Lender_ID where useraccount.rol=?  and (useraccount.User_ID LIKE CONCAT('%', ?, '%') OR useraccount.firstName LIKE CONCAT('%', ?, '%')  OR useraccount.lastName LIKE CONCAT('%', ?, '%')) group by useraccount.user_ID;",["Lender",search,search,search,search],(err,results)=>{
+        if(err){
+            return  res.status(500).json({error:"internal server error",success:false})
+        }
+        res.json({message:"Data fetched",success:true,data:results})
+    })
+}
+catch(error){
+    return  res.status(500).json({error:"internal server error",success:false})
+}
+finally{
+    req.mysql.release()
+}
+})
+
+route.patch("/update/lender",verifyToken,(req,res)=>{
+
+    try{
+      
+    const{app_ID,lender_ID} =req.body
+
+    req.mysql.query("insert into requests(app_ID,lender_ID,borrower_ID) values(?,?,?)",[app_ID,lender_ID,req.user.user_id],(err,requests)=>{
+        if(err){
+            console.log(err)
+            return  res.status(500).json({error:"internal server error",success:false})
+        }
+        res.json({message:"Lender requests submitted",success:true})
+    })
+}
+catch(error){
+
+}
+finally{
+    req.mysql.release()
+}
+  
+}
+)
 route.post("/login",(req,res)=>{
 
     const secret=process.env.SECRET || crypto.randomBytes(32).toString("hex")
@@ -144,6 +191,7 @@ route.post("/login",(req,res)=>{
         const token=jwt.sign(payload,secret,{expiresIn :"1d"})
   
         updateToken(req,token,mobile)
+        sendSms("8844882")
         
      res.json({message:"Login successful","validated":true,success:true,data:{token:token,results:results[0]}})
        }
@@ -160,13 +208,13 @@ route.post("/login",(req,res)=>{
 })
 
 route.get("/",verifyToken,(req,res)=>{
-    
+    try{
     req.mysql.query("select * from UserAccount where user_ID = ?",[req.user.user_id],(err,results)=>{
         if(err){
            return res.json({message:"Failed to fetch details",success:false,data:req.user})
         }
         var profile=results[0]
-        req.mysql.query("select * from loan where user_ID=?",[req.user.user_id],(err,results)=>{
+        req.mysql.query("select * from loan inner join loan_type on loan.type_ID=loan_type.ID where loan.user_ID=? order by Date_applied DESC",[req.user.user_id],(err,results)=>{
             if(err){
                 console.log(err)
                 return res.json({message:"Failed to fetch details",success:false,data:req.user})
@@ -186,11 +234,18 @@ route.get("/",verifyToken,(req,res)=>{
              })
         })
     })
+}
+catch(error){
+
+}
+    finally{
+        req.mysql.release();
+    } 
 })
 
 
 route.get("/users",(req,res)=>{
-     
+     try{
     req.mysql.query("select user_ID,firstName,middleName,lastName,phone,Email,gender,DOB,rol from UserAccount",(err,results)=>{
         if(err){
            return res.json({message:"Failed to fetch details",success:false})
@@ -198,11 +253,15 @@ route.get("/users",(req,res)=>{
 
 console.log(results)
         res.json({results:results})
-    })
+    })} catch(error){
+
+    }
+     finally{
+        req.mysql.release();
+    } 
 })
 route.post("/emergency/add",verifyToken,(req,res)=>{
     try{
-       
         let saved=true;
         req.body.forEach(item => {
             const{fullname,mobile,relation}=item
@@ -227,7 +286,9 @@ route.post("/emergency/add",verifyToken,(req,res)=>{
     catch(error){
         console.log(error)
         res.status(500).json({message:"Internal server error",success:false})
-    }
+    } finally{
+        req.mysql.release();
+    } 
 })
 
 const updateToken=(req,token,mobile)=>{
@@ -240,7 +301,10 @@ const updateToken=(req,token,mobile)=>{
     }
     catch(error){
         res.status(500).json({"message":"Internal server error",success:false})
-    }
+    } 
+    finally{
+        req.mysql.release();
+    } 
 }
 const sendMail=(email)=>{
     try {
@@ -259,7 +323,6 @@ const sendMail=(email)=>{
             html:content(email)
             
         };
-
           transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
               console.error('Error sending email:', error);
@@ -284,7 +347,9 @@ route.get("/verify",(req,res)=>{
     }  
     catch(error){
       res.json({message:"Failed to verfiy your account"})
-    }
+    } finally{
+        req.mysql.release();
+    } 
 })
 route.post("/add/document",upload.single("file"),(req,res)=>{
     try {
@@ -318,8 +383,33 @@ route.post("/add/document",upload.single("file"),(req,res)=>{
         console.log(error)
         res.json({error:"Failed",success:false})   
     }
+      finally{
+           req.mysql.release();
+       } 
 })
 
+
+const sendSms=(phone)=>{
+    try{
+        const client=new twilio(process.env.TWILIO_ACCOUNT_SID,process.env.TWILIO_ACOUNT_TOKEN)
+
+        // client.messages.create({
+        //     body: 'Hello from twilio-node',
+        //     to: '+254769702562', // Text your number
+        //     from: '+254769702562',
+        // }).then(message=>{
+        //     console.log(message.sid)
+        // }).catch(error=>{
+        //     console.log(error)
+        // })
+    }
+    catch(error){
+        fs.appendFile("log.txt",error,()=>{
+            console.log("Error Logged")
+        })
+    }
+
+}
 const uploadDocument=()=>{
    
 }

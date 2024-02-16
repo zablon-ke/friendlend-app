@@ -23,7 +23,8 @@ const verifyToken=(req,res,next)=>{
 }
 
 
-route.get("vi/balance",verifyToken,(req,res)=>{
+route.get("/vi/balance",verifyToken,(req,res)=>{
+    try{
     req.mysql.query("select balance from useraccount where User_ID=?",[req.user.user_id],(err,results)=>{
 
         if(err){
@@ -31,7 +32,12 @@ route.get("vi/balance",verifyToken,(req,res)=>{
         }
 
         res.json({message:"Record fetched",success:true,data:results[0]})
-    })
+    })}
+    catch(error){
+   
+    }  finally{
+           req.mysql.release();
+       } 
 })
 
 

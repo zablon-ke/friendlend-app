@@ -12,10 +12,10 @@ const verifyToken=(req,res,next)=>{
    if(auth !="Bearer"){
     return res.status(400).json({error:"invalid inputs",success:false})
    }
-  
+
    jwt.verify(token,secret,(err,decoded)=>{
     if(err){
-      return  res.status(400).json({"success":false,"message":"session expired"})
+      return  res.status(400).json({"success":false,"error":"session expired"})
     }
     req.user=decoded
     next()
@@ -39,6 +39,8 @@ route.get("/duration",(req,res)=>{
     } 
     catch (error) {
         res.status(422).json({"error":"Internal server error",success:false})
+    } finally{
+        req.mysql.release()
     }
     }
 )
@@ -71,11 +73,13 @@ route.post("/loan",verifyToken,(req,res)=>{
     }
     catch(error){
         res.status(500).json({error:"Internal server error",success:false})
+    } finally{
+        req.mysql.release()
     }
 }) 
 route.get("/vi/loan",verifyToken,(req,res)=>{
     try {
-        req.mysql.query("select * from loan left join contract on contract.app_ID=loan.app_ID inner join loan_type on loan.type_ID=loan_type.ID where loan.user_ID=? order by Date_applied DESC",[req.user.user_id],(err,results)=>{
+        req.mysql.query("select * from loan inner join loan_type on loan.type_ID=loan_type.ID where loan.user_ID=? order by Date_applied DESC",[req.user.user_id],(err,results)=>{
             if(err){
                 return res.status(500).json({error:"Internal server error",success:false})
             }
@@ -83,6 +87,8 @@ route.get("/vi/loan",verifyToken,(req,res)=>{
         })
     } catch (error) {
         res.status(500).json({"error":"Failed",success:false})
+    } finally{
+        req.mysql.release()
     }
 })
 route.get("/loan/type",(req,res)=>{
@@ -96,6 +102,9 @@ route.get("/loan/type",(req,res)=>{
     } catch (error) {
         return  res.status(500).json({error:`Internal server error`,success:false})
         
+    }
+    finally{
+        req.mysql.release()
     }
 })
 route.post("/contract",verifyToken,(req,res)=>{
@@ -128,7 +137,6 @@ route.post("/contract",verifyToken,(req,res)=>{
                         }
                         req.mysql.query("insert into contract(contract_ID,app_ID,borrower_ID,lender_ID,State,interestCharged,amount) values(?,?,?,?,?,?,?)",[contract_ID,app_ID,borrower_ID,lender_ID,"Not Completed",interest,amount1],(err,results)=>{
                             if(err){
-                                console.log(err)
                                 return res.status(500).json({message:"Internal Server error",success:false})
                             }
                             req.mysql.query("select firstName , lastName from useraccount where User_ID=?",[borrower_ID],(err,results)=>{
@@ -150,7 +158,9 @@ route.post("/contract",verifyToken,(req,res)=>{
     })
     }
     catch(error){
-        console.log(error)
+        res.status(500).json({message:"Internal Server error",success:false})
+    }finally{
+        req.mysql.release()
     }
 })
 route.post("/type",verifyToken,(req,res)=>{
@@ -163,39 +173,85 @@ route.post("/type",verifyToken,(req,res)=>{
         res.json({message:"Loan Type added successfully",success:true})
     })
    } catch (error) {
-      return res.status(500).json({error:"Internal Server error",success:false})
+       res.status(500).json({error:"Internal Server error",success:false})
    }
+   finally{
+    req.mysql.release()
+}
 })
 
-route.get("/loan",(req,res)=>{
-    req.mysql.query("select * from loan where user_ID=?",[2],(err,results)=>{
+route.get("/loan",verifyToken,(req,res)=>{
+    try{
+       
+    const {status}=req.query
+    req.mysql.query("select * from loan where user_ID=? and State=? order by Date_applied DESC",[req.user.user_id,status],(err,results)=>{
         if(err){
             return res.status(500).json({error:"Failed to fetch records",success:false})
         }
-        res.json(results)
-    })
+        res.json({message:"Loan Fetched",success:true,data:results})
+    })}
+    catch(error){
+   
+    }  finally{
+           req.mysql.release();
+       } 
 })
 
 route.get("/contract",(req,res)=>{
+    try{
     req.mysql.query("select * from contract where app_ID=? and state=?",["4128AEAD3156","Not Completed"],(err,results)=>{
         if(err){
             return res.status(500).json({error:"Failed to fetch records",success:false})
         }
         res.json(results)
-    })
+    })}
+    catch(error){
+   
+    }  finally{
+           req.mysql.release();
+       } 
 })
 route.patch("/vi/loan/update",verifyToken,(req,res)=>{
+    try{
     const {status,app_ID}=req.body
     req.mysql.query("update loan set State=? where app_ID=?",[status,app_ID],(err,results)=>{
         if(err){
             return res.status(500).json({error:"Internal server error",success:false})
         }
         res.json({"message":"Loan status updated",success:true})
-    })
+    })}
+    catch(error){
+   
+    }  finally{
+           req.mysql.release();
+       } 
 })
-route.get("/vi/requests",verifyToken,(req,res)=>{
+
+// query lender
+
+route.get("/v2/lender",verifyToken,(req,res)=>{
+try{
+
+  req.mysql.query("select Lender_ID, firstName,lastName,balance from useraccount inner join requests on requests.lender_ID = useraccount.User_ID where requests.borrower_ID =? order by requests.ID DESC LIMIT 1",[req.user.user_id],(err,results)=>{
+       if(err){
+        return res.status(500).json({error:"Failed to fetch records",success:false})
+       } 
+       if(results.length > 0){
+        res.json({message:"Data Available",success:true,data:results[0]})
+       }
+ 
+    })}
+    catch(error){
+        res.status(500).json({error:"Failed to fetch records",success:false})
+    }  finally{
+           req.mysql.release();
+       } 
+})
+
+
+route.get("/v2/requests",verifyToken,(req,res)=>{
     try {
-         req.mysql.query("select loan.app_ID, useraccount.firstName,useraccount.middleName ,useraccount.lastName,period,State as Status,interestRate,loanAmount,requests.app_ID from requests inner join useraccount on useraccount.User_ID=requests.borrower_ID inner join loan on loan.app_ID = requests.app_ID inner join loan_type on loan_type.ID = loan.type_ID where requests.lender_ID=?",[req.user.user_id],(err,results)=>{
+         req.mysql.query("select loan.app_ID, useraccount.firstName,useraccount.middleName ,useraccount.lastName,period,State as Status,interestRate,loanAmount,requests.app_ID from requests inner join useraccount on useraccount.User_ID=requests.borrower_ID inner join loan on loan.app_ID = requests.app_ID inner join loan_type on loan_type.ID = loan.type_ID",(err,results)=>{
             if(err){
                 console.log(err)
                 return res.status(500).json({error:"Internal server error",success:false})
@@ -204,6 +260,25 @@ route.get("/vi/requests",verifyToken,(req,res)=>{
          })
     } catch (error) {
         return res.status(500).json({error:"Internal server error",success:false})
+    }  finally{
+        req.mysql.release();
+    }
+})
+
+route.get("/vi/requests",verifyToken,(req,res)=>{
+    try {
+         req.mysql.query("select loan.app_ID, useraccount.firstName,useraccount.middleName ,useraccount.lastName,period,State as Status,interestRate,loanAmount,requests.app_ID from requests inner join useraccount on useraccount.User_ID=requests.borrower_ID inner join loan on loan.app_ID = requests.app_ID inner join loan_type on loan_type.ID = loan.type_ID where requests.lender_ID=?",[req.user.user_id],(err,results)=>{
+            if(err){
+                console.log(err)
+                return res.status(500).json({error:"Internal server error",success:false})
+            }
+        
+            res.json({message:"Record fetched",success:true,data:results})
+         })
+    } catch (error) {
+        return res.status(500).json({error:"Internal server error",success:false})
+    }  finally{
+        req.mysql.release();
     }
 })
 export default route
