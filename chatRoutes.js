@@ -1,13 +1,10 @@
-import express from 'express'
-import { randomUUID } from 'crypto'
-import jwt from 'jsonwebtoken'
-
-import http from 'http'
-import WebSocket from 'ws'
-
+const  express = require('express') 
+const { randomUUID } =require('crypto') 
+const jwt = require('jsonwebtoken') 
 
 
 const route=express.Router()
+
 const verifyToken=(req,res,next)=>{
     const secret=process.env.SECRET
     const token=req.headers.authorization.split(" ")[1]
@@ -110,4 +107,4 @@ WHERE
 })
 
 
-export default route
+module.exports ={ route }

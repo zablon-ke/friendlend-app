@@ -1,23 +1,35 @@
-import bodyParser from "body-parser";
-import express from "express";
-import pool from "./dbConfig.js";
-import cors from 'cors'
-import dotenv from 'dotenv'
-import userRoutes from "./userRoutes.js";
-import appRoutes from "./appRoutes.js";
-import adminRoutes from './adminRoutes.js'
-import paymentRoutes from './paymentRoutes.js'
-import chatRoutes from './chatRoutes.js'
-import MpesaRoutes from './Mpesa.js'
-import MpRoutes from './mp.js'  
-import transRoutes from './transRoutes.js' 
-import http from 'http'
-import WebSocket from "ws"; 
-import { WebSocketServer } from "ws";
+const bodyParser =require("body-parser")
+const express =require("express")
+const path =require("path")
+const { pool } =  require("./db2.js");
+const { route: userRoutes } = require("./userRoutes.js")
+const { route: appRoutes } = require("./appRoutes.js")
+const { route: transRoutes } = require("./transRoutes.js")
+const { route: adminRoutes } = require("./adminRoutes.js")
+const { route: MpesaRoutes } = require("./Mpesa.js")
+const { route: paymentRoutes } = require("./paymentRoutes.js")
+const { route: chatRoutes } = require("./chatRoutes.js")
+
+const circular = require("circular-json")
+const cors =require('cors')
+const dotenv =require('dotenv')
+
+
 dotenv.config()
+const app=express()
+app.use(express.static(path.join(__dirname, 'uploads')));
 
-const app=express();
+app.get('/uploads/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, 'uploads', filename);
 
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+});
 // allow cors origin
 app.use(cors())
 
@@ -27,55 +39,43 @@ app.use(bodyParser.json())
 app.use(express.urlencoded({extended : true}))
 
 
-// get database connection
-const getConnectionFromPool = () => {
-    return
-};
-
 app.use((req,res,next)=>{
-   
+   try{
     pool.getConnection((err,connection)=>{
         if(err){
-            return res.status(500).send("Internal server error")
+             console.log(err)
+            return res.status(500).send("Connection error  try again later "+err)
         }
-       
         req.mysql=connection
-
         next()
     })
+   }
+   catch(error){
+    return res.send("Internal server error ")
+   }
+ 
 })
+
 
 app.use("/user",userRoutes)
 app.use("/app",appRoutes)
 app.use("/admin",adminRoutes)
+app.use("/p",MpesaRoutes)
+app.use("/tr",transRoutes)
 app.use("/vi",paymentRoutes)
 app.use("",chatRoutes)
-app.use("",MpesaRoutes)
-app.use("/p",MpRoutes)
-app.use("/tr",transRoutes)
 
-app.get("/used",(req,res)=>{
-    res.json({"Message":"Out"})
+
+app.get("/",(req,res)=>{
+try{
+    res.json({message:"Server is up and running"})
+  
+}
+catch(error){
+    res.send("Internal server error")
+}
+   
 })
-
-
-
-const base_url=process.env.BASE_URL.split("//")[1]
-const ws = new WebSocketServer({port :8000,host:"1.1.1.58"});
-
-
-ws.on('error', (error)=>[
-    console.log(error)
-]);
-
-ws.on('connection', (ws)=>{
-    console.log(ws)
-})
-
-ws.on('message', (data)=> {
-  console.log('received: %s', data);
-});
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT,()=>{

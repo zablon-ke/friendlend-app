@@ -1,3 +1,5 @@
+const { route } = require("./userRoutes")
+
 const addSystemLogs=(req,res,action,action_type)=>{
 
     req.mysql.query("insert into systemlogs(user_ID,action,action_type) values(?,?,?)",[req.user.user_id,action,action_type],(err,results)=>{
@@ -10,4 +12,4 @@ const addSystemLogs=(req,res,action,action_type)=>{
 
 }
 
-export default addSystemLogs;
+module.exports ={route};

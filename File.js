@@ -1,6 +1,6 @@
 
 
-export const content=(email)=>{
+ const content=(email)=>{
    const s=
 `
 <head>
@@ -25,3 +25,6 @@ export const content=(email)=>{
 </html>`
  return s
 }
+
+
+module.exports=content

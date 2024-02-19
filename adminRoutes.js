@@ -1,8 +1,8 @@
-import express from 'express'
-import jwt from 'jsonwebtoken'
+const express =require('express') 
+const jwt =require('jsonwebtoken') 
 
-import crypto,{ randomUUID } from "crypto";
-import { error } from 'console';
+const { crypto,randomUUID } =require("crypto") ;
+const { error } =require('console') 
 const route=express.Router()
 
 const verifyToken=(req,res,next)=>{
@@ -50,4 +50,4 @@ route.post("/credit",verifyToken,(req,res)=>{
 })
 
 
-export default route
+module.exports ={ route }

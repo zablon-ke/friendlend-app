@@ -1,7 +1,7 @@
-import express from "express";
-import jwt from 'jsonwebtoken'
-import Logs from './logs.js'
-import crypto,{ randomUUID } from "crypto";
+const express = require("express");
+const jwt = require('jsonwebtoken')
+const Logs = require('./logs.js')
+const {crypto, randomUUID } = require("crypto");
 const route=express.Router()
 
 const verifyToken=(req,res,next)=>{
@@ -237,8 +237,9 @@ try{
         return res.status(500).json({error:"Failed to fetch records",success:false})
        } 
        if(results.length > 0){
-        res.json({message:"Data Available",success:true,data:results[0]})
+       return  res.json({message:"Data Available",success:true,data:results[0]})
        }
+       res.status(200).json({error:"Failed to fetch records",success:false})
  
     })}
     catch(error){
@@ -281,4 +282,4 @@ route.get("/vi/requests",verifyToken,(req,res)=>{
         req.mysql.release();
     }
 })
-export default route
+module.exports ={route}

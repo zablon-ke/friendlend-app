@@ -1,5 +1,5 @@
-import express from "express";
-import jwt from "jsonwebtoken";
+const express =require("express");
+const jwt =require("jsonwebtoken");
 const route=express.Router()
 
 const verifyToken=(req,res,next)=>{
@@ -63,4 +63,4 @@ route.post("/transaction",(req,res)=>{
     }
 })
 
-export default route
+module.exports ={ route }

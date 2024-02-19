@@ -1,10 +1,11 @@
-import express from 'express'
-import axios from "axios";
-import jwt from 'jsonwebtoken';
-import fs from 'fs'
-import cors from 'cors'
-import bodyParser from 'body-parser';
-import { randomUUID } from 'crypto';
+const express =require('express')
+const axios =require("axios");
+const jwt =require('jsonwebtoken');
+const fs =require('fs')
+const cors =require('cors')
+const bodyParser =require('body-parser');
+const { randomUUID } =require('crypto');
+
 const route=express.Router()
 
 route.use(cors())
@@ -167,4 +168,4 @@ route.post("/payment/success",(req,res)=>{
 })
 
 
-export default route
+module.exports ={ route }

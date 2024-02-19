@@ -1,14 +1,15 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import nodemailer from 'nodemailer'
-import fs from 'fs'
-import { content } from "./File.js";
-import multer from "multer";
-import path from "path";
-import  twilio from "twilio";
+const express = require("express");
+const jwt =require("jsonwebtoken");
+const nodemailer = require('nodemailer')
+const fs =require('fs')
+const content  = require("./File.js");
+const multer =require( "multer");
+const path = require("path");
+const  twilio = require("twilio");
 
 
 const route=express.Router()
+
 const verifyToken=(req,res,next)=>{
     const secret=process.env.SECRET || crypto.randomBytes(32).toString("hex")
    const token=req.headers.authorization.split(" ")[1]
@@ -30,7 +31,12 @@ const storage = multer.diskStorage({
       cb(null, 'uploads/'); // Set the destination folder for uploaded files
     },
     filename: function (req, file, cb) {
-      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+        let filetype="file_";
+        let images=["png","jpg"];
+        if(images.includes(path.extname(file.originalname).toLowerCase())){
+            filetype="image_"
+        }
+      cb(null, filetype + Date.now() + path.extname(file.originalname));
     }
   });
 
@@ -57,16 +63,15 @@ route.post("/sign_up",(req,res)=>{
             }
         }
             res.json({message:"Account created successfully",success:true})
-    })
+     })
        
     } catch (error) {
         res.json({error:"Internal server error "+error,success:false})
     }finally{
-        req.mysql.release()
+      
     }
 
 })
-
 
 route.post("/add",(req,res)=>{
     try{
@@ -106,8 +111,6 @@ route.post("/add",(req,res)=>{
         res.status(403).json({"error":"Erro Saving data ",success:false})
     }
 })
-
-
 route.post("/logs",(req,res)=>{
     req.mysql.query("select * from systemlogs where user_ID=?",[req.user.user_id],(err,results)=>{
         if(err){
@@ -191,7 +194,7 @@ route.post("/login",(req,res)=>{
         const token=jwt.sign(payload,secret,{expiresIn :"1d"})
   
         updateToken(req,token,mobile)
-        sendSms("8844882")
+        // sendSms("8844882")
         
      res.json({message:"Login successful","validated":true,success:true,data:{token:token,results:results[0]}})
        }
@@ -209,11 +212,16 @@ route.post("/login",(req,res)=>{
 
 route.get("/",verifyToken,(req,res)=>{
     try{
-    req.mysql.query("select * from UserAccount where user_ID = ?",[req.user.user_id],(err,results)=>{
+    req.mysql.query("select * from useraccount where user_ID = ?",[req.user.user_id],(err,results)=>{
         if(err){
            return res.json({message:"Failed to fetch details",success:false,data:req.user})
         }
         var profile=results[0]
+        if(results.length < 1){
+            return res.status(500).json({error:"No user account found",success:false})
+        }
+
+     
         req.mysql.query("select * from loan inner join loan_type on loan.type_ID=loan_type.ID where loan.user_ID=? order by Date_applied DESC",[req.user.user_id],(err,results)=>{
             if(err){
                 console.log(err)
@@ -224,15 +232,28 @@ route.get("/",verifyToken,(req,res)=>{
                return res.json({message:"Success ",data:{loan:loan_info,profile:profile,loan:{}}})
             }
             let id=profile['user_ID']
-            req.mysql.query("select * from emergency where user_ID=?",[id],(err,results)=>{
+            req.mysql.query("select ID,fullName,relationship,phone from emergency where user_ID=?",[req.user.user_id],(err,results)=>{
 
                 if(err){
                     console.log(err['sqlMessage'])
                 }
+                
                 let emergency=results
-               res.json({message:"data available",success:true,data:{profile:profile,loan:loan_info,emergency:emergency}})
+
+
+                req.mysql.query("select * from documents where user_ID=?",[id],(err,results)=>{
+
+                    if(err){
+                        console.log(err['sqlMessage'])
+                    }
+                    
+                    let documents=results
+                    res.json({message:"data available",success:true,data:{profile:profile,loan:loan_info,emergency:emergency,documents}})
+             
+                 })
              })
         })
+        
     })
 }
 catch(error){
@@ -245,13 +266,11 @@ catch(error){
 
 
 route.get("/users",(req,res)=>{
-     try{
-    req.mysql.query("select user_ID,firstName,middleName,lastName,phone,Email,gender,DOB,rol from UserAccount",(err,results)=>{
+try{
+    req.mysql.query("select user_ID,firstName,middleName,lastName,phone,Email,gender,DOB,profileImage,rol from useraccount",(err,results)=>{
         if(err){
            return res.json({message:"Failed to fetch details",success:false})
         }
-
-console.log(results)
         res.json({results:results})
     })} catch(error){
 
@@ -265,29 +284,29 @@ route.post("/emergency/add",verifyToken,(req,res)=>{
         let saved=true;
         req.body.forEach(item => {
             const{fullname,mobile,relation}=item
-                 req.mysql.query("insert into emergency(fullName,phone,relationship,user_ID) values(?,?,?,?)",[fullname,mobile,relation,req.user.user_id],(err,results)=>{
+    
+            req.mysql.query("insert into emergency(fullName,phone,relationship,user_ID) values(?,?,?,?)",[fullname,mobile,relation,req.user.user_id],(err,results)=>{
             if(err){
-
                 console.log(err)
                 saved=false;
-                
                 return res.status(500).json({message:"Failed to add emergency contact",success:false})
-            
             }
-          
      } )
-        }
-    
-        );
+         }
+
+       );
    if(saved){
     res.json({message:"Emergency contact saved",success:true})
+   }
+   else{
+    res.json({error:"Failed to save Details",success:false})
    }
     }
     catch(error){
         console.log(error)
         res.status(500).json({message:"Internal server error",success:false})
     } finally{
-        req.mysql.release();
+        // req.mysql.release();
     } 
 })
 
@@ -351,43 +370,62 @@ route.get("/verify",(req,res)=>{
         req.mysql.release();
     } 
 })
-route.post("/add/document",upload.single("file"),(req,res)=>{
+
+route.post("/add/document", verifyToken, upload.single("file"), (req, res) => {
     try {
-        const {user_ID,document_type} =req.body
-        if(user_ID ==null || user_ID ==""){
-            fs.unlinkSync(`uploads/${req.file.filename}`)
-            return res.json({error:"failed"})
-        }
-        if(!req.file){
-            return res.status(400).json({error:"No file uploaded",success:false});
-        }
-        req.mysql.query("select * from useraccount where user_ID =?",[user_ID],(err,results)=>{
-            if(err){
-                return res.status(500).json({error:"Failed ",success:false})
-            }
+        const document_type = decodeURIComponent(req.body.document_type.toString());
+        console.log('Received document_type:', document_type);
 
-            if(results.length > 0){
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded", success: false });
+        }
 
-                const uploaded=req.file
-                const filename=uploaded.filename
-                req.mysql.query("insert into documents(user_ID,document_type,fileName) values(?,?,?)",[user_ID,document_type,filename],(err,results)=>{
-                    if(err){
-                            fs.unlinkSync(`uploads/${req.file.filename}`)
-                            return res.status(500).json({error:"Internal server error",success:false})
-                        }
-                        return res.json({message:"Document uploaded",success:true})
-                })
-            }
-        })
+        const uploaded = req.file;
+        const filename = path.join("/uploads", uploaded.filename); // Use path.join for path concatenation
+
+        try {
+            req.mysql.query("INSERT INTO documents(user_ID, document_type, fileName) VALUES (?, ?, ?)", [req.user.user_id, document_type, filename], (err, results) => {
+                if (err) {
+                    fs.unlinkSync(`./uploads/${uploaded.filename}`);
+                    console.error(err);
+                    return res.status(500).json({ error: "Internal server error", success: false });
+                }
+                return res.json({ message: "Document uploaded", success: true });
+            });
+        } catch (err) {
+            fs.unlinkSync(`./uploads/${uploaded.filename}`);
+            console.error(err);
+            return res.status(500).json({ error: "Internal server error", success: false });
+        }
     } catch (error) {
-        console.log(error)
-        res.json({error:"Failed",success:false})   
+        console.error(error);
+        return res.status(500).json({ error: "Internal server error", success: false });
+    } finally {
+        req.mysql.release();
     }
-      finally{
-           req.mysql.release();
-       } 
-})
+});
 
+route.patch("/update/photo",verifyToken,upload.single("file"),(req,res)=>{
+        try {
+
+            let filepath=`/uploads/${req.file.filename}`
+            req.mysql.query("update useraccount set profileImage=? where User_ID=?",[filepath,req.user.user_id],(err,results)=>{
+                if(err){
+                        fs.unlinkSync(`uploads/${req.file.filename}`)
+                        console.log(err)
+                        return res.status(500).json({error:"Internal server error",success:false})
+                    }
+                    return res.json({message:"profile Photo updated",success:true,data:{"filepath":filepath}})
+            })
+      
+        } catch (error) {
+            console.log(error)
+            res.json({error:"Failed",success:false})   
+        }
+          finally{
+               req.mysql.release();
+           } 
+})
 
 const sendSms=(phone)=>{
     try{
@@ -410,7 +448,5 @@ const sendSms=(phone)=>{
     }
 
 }
-const uploadDocument=()=>{
-   
-}
-export default route;
+
+module.exports ={ route }

@@ -1,7 +1,8 @@
-import express from "express";
-import jwt from 'jsonwebtoken'
-import Logs from './logs.js'
-import crypto,{ randomUUID } from "crypto";
+const express = require("express");
+const jwt = require('jsonwebtoken')
+const Logs = require('./logs.js')
+const { crypto,randomUUID } = require("crypto");
+
 const route=express.Router()
 
 const verifyToken=(req,res,next)=>{
@@ -41,4 +42,4 @@ route.get("/vi/balance",verifyToken,(req,res)=>{
 })
 
 
-export default route
+module.exports ={ route }
